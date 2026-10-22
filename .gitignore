@@ -1,0 +1,49 @@
+# =========================
+# Entornos Virtuales (uv)
+# =========================
+# ¡Nunca subimos las librerías instaladas! uv las recreará usando uv.lock
+.venv/
+venv/
+env/
+
+# =========================
+# Archivos compilados de Python
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# =========================
+# Secretos y Variables de Entorno
+# =========================
+# ¡CRÍTICO! Aquí guardaremos contraseñas más adelante. Nunca deben ir a Git.
+.env
+.env.*
+*.pem
+
+# =========================
+# Archivos temporales de Flask
+# =========================
+instance/
+.webassets-cache
+
+# =========================
+# Bases de datos locales
+# =========================
+*.sqlite3
+*.db
+
+# =========================
+# Logs y caché
+# =========================
+*.log
+.ruff_cache/
+.pytest_cache/
+
+# =========================
+# Editores y Sistemas Operativos
+# =========================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

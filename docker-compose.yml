@@ -1,0 +1,15 @@
+services:
+  web:
+    # Le decimos que construya la imagen usando el Dockerfile de esta misma carpeta
+    build: .
+    
+    # Le damos un nombre amigable al contenedor (opcional, pero buena práctica)
+    container_name: tema3-persistencia
+    
+    # Mapeo de puertos (Host:Contenedor)
+    ports:
+      - "5000:5000"
+      
+    # Mapeo de volúmenes para el hot-reload (Host:Contenedor)
+    volumes:
+      - .:/app
