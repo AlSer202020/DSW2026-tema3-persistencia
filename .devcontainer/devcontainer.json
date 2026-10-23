@@ -1,8 +1,6 @@
 {
   "name": "Entorno Python con uv",
-  "dockerComposeFile": [
-    "../docker-compose.yml"
-  ],
+  "dockerComposeFile": ["../docker-compose.yml"],
   "service": "web",
   "workspaceFolder": "/app",
   "overrideCommand": true,
