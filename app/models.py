@@ -14,4 +14,4 @@ class Producto(db.Model):
     imagen: Mapped[str | None] = mapped_column(db.String(200), nullable=True)
 
     def __repr__(self):
-        return f"Producto id={self.id}, {self.nombre}: {self.precio}€"
+        return f"Producto id={self.id}: {self.nombre} ({self.precio}€)"
