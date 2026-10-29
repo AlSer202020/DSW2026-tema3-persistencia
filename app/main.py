@@ -48,8 +48,8 @@ def crear_producto():
         nombre_imagen = None
 
         # Procesar el upload de la imagen
-        if form.imagen.data:  # Chequea si se  ha subido una imagen
-            archivo = form.imagen.data
+        if form.archivo_imagen.data:  # Chequea si se  ha subido una imagen
+            archivo = form.archivo_imagen.data
             nombre_imagen = secure_filename(archivo.filename)
 
             # Asegurar que la ruta existe
@@ -62,7 +62,7 @@ def crear_producto():
             nombre=form.nombre.data,
             precio=form.precio.data,
             disponible=form.disponible.data,
-            imagen=nombre_imagen if form.imagen.data else None,
+            imagen=nombre_imagen,
         )
         db.session.add(nuevo_producto)
         db.session.commit()
@@ -80,8 +80,14 @@ def editar_producto(prod_id):
     form = ProductoForm(obj=producto)
 
     if form.validate_on_submit():
-        if form.imagen.data:
-            archivo = form.imagen.data
+        # Se actualizan los datos
+        producto.nombre = form.nombre.data
+        producto.precio = form.precio.data
+        producto.disponible = form.disponible.data
+
+        # Proceder el upload de la imagen
+        if form.archivo_imagen.data:  # Chaquea si se ha subido una imagen
+            archivo = form.archivo_imagen.data
             nombre_imagen = secure_filename(archivo.filename)
 
             # Asegurar que la ruta existe
@@ -89,17 +95,23 @@ def editar_producto(prod_id):
 
             # Guardar el fichero
             archivo.save(os.path.join(app.config["UPLOAD_FOLDER"], nombre_imagen))
-            producto.imagen = nombre_imagen
 
-        producto.nombre = form.nombre.data
-        producto.precio = form.precio.data
-        producto.disponible = form.disponible.data
-        # producto.imagen = nombre_imagen if form.imagen.data else form.imagen.data
+            # Eliminar el archivo anterior:
+            if producto.imagen and producto.imagen != nombre_imagen:
+                ruta_antigua = os.path.join(
+                    app.config["UPLOAD_FOLDER"], producto.imagen
+                )
+                if os.path.exists(ruta_antigua):
+                    os.remove(ruta_antigua)
+
+            producto.imagen = nombre_imagen
 
         db.session.commit()
         return redirect(url_for("mostrar_catalogo"))
 
-    return render_template("producto_form.html", form=form, titulo="Editar producto")
+    return render_template(
+        "producto_form.html", form=form, titulo="Editar producto", producto=producto
+    )
 
 
 @app.route("/producto/<int:prod_id>/eliminar", methods=["POST"])
