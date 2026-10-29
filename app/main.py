@@ -3,6 +3,17 @@ from werkzeug.utils import secure_filename
 from flask import Flask, redirect, render_template, url_for
 from app.forms import ProductoForm
 from app.models import db, Producto
+from flask import (
+    Flask,
+    redirect,
+    render_template,
+    url_for,
+    request,
+    make_response,
+    session,
+    flash,
+)
+from datetime import timedelta
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "una_contraseña_segura_al_azar"
@@ -14,6 +25,9 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 # Configurar la carpeta destino para las imágenes
 app.config["UPLOAD_FOLDER"] = os.path.join("app", "static", "img", "uploads")
 app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024  # Límite de 2MB por seguridad
+
+# Configuración vida útil de las sesiones permanentes (2 días)
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=2)
 
 
 # Vinculamos SQLAlchemy con nuestra aplicación de Flask
@@ -37,7 +51,10 @@ def home():
 @app.route("/catalogo")
 def mostrar_catalogo():
     productos = Producto.query.all()
-    return render_template("catalogo.html", lista_productos=productos)
+    ultimo = request.cookies.get("ultimo_visto")
+    return render_template(
+        "catalogo.html", lista_productos=productos, ultimo_visto=ultimo
+    )
 
 
 @app.route("/producto/nuevo", methods=["GET", "POST"])
@@ -119,6 +136,42 @@ def eliminar_producto(prod_id):
     producto = db.get_or_404(Producto, prod_id)
     db.session.delete(producto)
     db.session.commit()
+    return redirect(url_for("mostrar_catalogo"))
+
+
+@app.route("/producto/<int:prod_id>")
+def ver_producto(prod_id):
+    producto = db.get_or_404(Producto, prod_id)
+
+    respuesta = make_response(
+        render_template("producto_detalle.html", producto=producto)
+    )
+
+    # Crea la coockie
+    respuesta.set_cookie(
+        "ultimo_visto",
+        value=producto.nombre,
+        max_age=60 * 60 * 24 * 7,
+        httponly=True,
+        samesite="Lax",
+    )
+
+    return respuesta
+
+
+@app.route("/carrito/anadir<int:prod_id>", methods=["POST"])
+def anadir_al_carrito(prod_id):
+    # producto = db.get_or_404(Producto, prod_id)
+    session.permanent = True
+    if "carrito" not in session:
+        session["carrito"] = []
+
+    session["carrito"].append(prod_id)
+
+    session.modified = True
+
+    flash("añadido el producto al carrito", "exito")
+
     return redirect(url_for("mostrar_catalogo"))
 
 
