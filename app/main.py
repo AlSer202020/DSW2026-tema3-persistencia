@@ -14,9 +14,16 @@ from flask import (
     flash,
 )
 from datetime import timedelta
+from flask_debugtoolbar import DebugToolbarExtension
 
 app = Flask(__name__)
+
+app.debug = True
+
 app.config["SECRET_KEY"] = "una_contraseña_segura_al_azar"
+
+
+toolbar = DebugToolbarExtension(app)
 
 # Configuración de la base de datos (En local = SQLite)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///tienda.db"
@@ -171,6 +178,44 @@ def anadir_al_carrito(prod_id):
     session.modified = True
 
     flash("añadido el producto al carrito", "exito")
+
+    return redirect(url_for("mostrar_catalogo"))
+
+
+@app.route("/carrito")
+def ver_carrito():
+    # Obtenemos la lista de IDs (o una lista vacía si no hay carrito)
+    ids_carrito = session.get("carrito", [])
+
+    # Consultamos en la base de datos los productos cuyos IDs estén en la lista
+    if ids_carrito:
+        productos_carrito = Producto.query.filter(Producto.id.in_(ids_carrito)).all()
+    else:
+        productos_carrito = []
+
+    return render_template("carrito.html", productos=productos_carrito)
+
+
+@app.route("/carrito/vaciar", methods=["POST"])
+def vaciar_carrito():
+    # Eliminamos únicamente la clave 'carrito' de la sesión
+    session.pop("carrito", None)
+    flash("Has vaciado tu carrito de la compra.", "info")
+    return redirect(url_for("mostrar_catalogo"))
+
+
+@app.route("/carrito/eliminar/<int:prod_id>", methods=["POST"])
+def eliminar_producto_carrito(prod_id):
+    ids_carrito = session.get("carrito", [])
+
+    # if prod_id in ids_carrito:
+    #     for i, item in ids_carrito:
+    #         if item == prod_id:
+    #             session["carrito"].remove(item)
+    #     session.modified = True
+    #     flash("Has eliminao el producto del carrito.", "info")
+    # else:
+    #     flash("El producto no está en el carrito.", "error")
 
     return redirect(url_for("mostrar_catalogo"))
 
