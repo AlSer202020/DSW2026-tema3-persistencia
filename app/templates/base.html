@@ -11,8 +11,12 @@
     <body style="font-family: Arial, sans-serif; margin: 20px;">
         <nav>
             <a href="{{ url_for('mostrar_catalogo') }}">Catálogo de Productos</a> |
+            {% if current_user.is_authenticated and current_user.es_admin %}
             <a href="{{ url_for('crear_producto') }}">➕ Nuevo Producto</a>
+            {% endif %}
+            {% if current_user.is_authenticated %}
             <a href="{{ url_for('ver_carrito') }}">🛒Carrito</a>
+            {% endif %}
         </nav>
         <hr>
         {% with mensajes = get_flashed_messages(with_categories=true) %}
